@@ -8,7 +8,7 @@ Analysis of data of the [Open Train project](http://otrain.org/)
 
 ## Plan
 
-* ~~get new data from train (if available) or old one (if not) ~~
+* ~~get new data from train (if available) or old one (if not)~~
 * ~~clean the excel file: remove empty rows. english column names.~~
 * ~~try to load the whole excel file~~
 * ~~add time at station col~~
@@ -21,9 +21,11 @@ Analysis of data of the [Open Train project](http://otrain.org/)
 * ~~histogram of time in station~~
 * ~~Time at station planned to actual~~
 * ~~histogram for actual stop length, grouped by planned~~
-* fix the GTFS download script
+* ~~fix the GTFS download script~~
 * load and compare 2014 data
 * design a measure for train latency based on daily number of passengers
+...Some kind of balance for time of day
+* chart delay along route 
 
 
 ## Some insights 

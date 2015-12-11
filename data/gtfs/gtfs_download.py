@@ -36,6 +36,8 @@ folders = ['2014_07_07_17_58_16', '2014_07_08_22_00_01', '2014_07_16_22_00_01', 
            '2015_07_11_06_00_02', '2015_07_12_06_00_03', '2015_07_13_06_00_02', '2015_07_14_06_00_02',
            '2015_07_15_06_00_02']
 
+download_location = 'raw/'
+
 def download():
     td = r"http://192.241.154.128/gtfs-data/%s/irw_gtfs.zip"
 
@@ -52,10 +54,9 @@ def download():
         else:  # total size is unknown
             sys.stderr.write("read %d\n" % (read_so_far,))
 
-
     for folder in reversed(folders):
         print(folder)
-        fn = folder + ".zip"
+        fn = os.path.join(download_location, folder + ".zip")
         if not os.path.exists(fn):
             urllib.request.urlretrieve(td % folder, fn, reporthook)
             time.sleep(1)

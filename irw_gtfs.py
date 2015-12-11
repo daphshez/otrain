@@ -2,8 +2,9 @@ __author__ = 'Daphna'
 
 from collections import namedtuple, defaultdict
 from io import TextIOWrapper
-from csv import DictReader
+from csv import DictReader, DictWriter
 from zipfile import ZipFile
+import os
 
 Route = namedtuple('Route', 'route_id route_long_name')
 # it seems that all services in IRW.zip have a single day
@@ -14,11 +15,13 @@ StopTime = namedtuple('StopTime', 'trip_id arrival_time departure_time stop stop
 # stops is a list of StopTime
 Trip = namedtuple('Trip', 'route service trip_id trip_headsign direction_id stops')
 # all data
-Schedule = namedtuple('Schedule', 'routes services stops trips')
+Schedule = namedtuple('Schedule', 'routes services stops trips date_published')
+
 
 ### utils
 def flatten(list_of_lists):
     return [item for list in list_of_lists for item in list]
+
 
 def group_by(list, key):
     d = {}
@@ -26,10 +29,13 @@ def group_by(list, key):
         d.setdefault(key(item), []).append(item)
     return d
 
+
 def merge_dicts(d1, d2):
     d = d1.copy()
     d.update(d2)
     return d
+
+
 ###
 
 
@@ -77,7 +83,8 @@ def load_schedule(zip_name):
             reader = DictReader(TextIOWrapper(trips_file, 'utf-8-sig'))
             trips = [make_trip(r) for r in reader]
 
-    return Schedule(routes, services, stops, trips)
+    date_published = min(trip.service.start_date for trip in trips)
+    return Schedule(routes, services, stops, trips, date_published)
 
 
 def group_trips_by_date(schedule):
@@ -114,3 +121,49 @@ def load_schedules(zip_names):
         schedule = merge_schedules(schedule, load_schedule(zip_name))
     return schedule
 
+
+def merge_gtfs(input_folder, output_folder, n_days=None):
+    """
+    From all data available in the input folder, generates a stops.txt file in the output folder
+    """
+
+    # fields that are going to be used
+    fields = ['trip_id', 'date', 'route_id', 'route_long_name', 'trip_headsign', 'stop_id', 'stop_name',
+              'arrival_time', 'departure_time', 'stop_sequence', 'gtfs_date']
+
+    def make_row(schedule, trip, stop):
+        return {'trip_id': trip.trip_id,
+                'date': trip.service.start_date,
+                'route_id': trip.route.route_id,
+                'route_long_name': trip.route.route_long_name,
+                'trip_headsign': trip.trip_headsign,
+                'stop_id': stop.stop.stop_id,
+                'stop_name': stop.stop.stop_name,
+                'arrival_time': stop.arrival_time,
+                'departure_time': stop.departure_time,
+                'stop_sequence': stop.stop_sequence,
+                'gtfs_date': schedule.date_published}
+
+
+    zip_files = (zip_file for zip_file in os.listdir(input_folder) if zip_file.endswith('.zip'))
+    dates_done = set()
+    with open(os.path.join(output_folder, 'stops.txt'), 'w', encoding='utf8') as f:
+        writer = DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+
+        for zip_file in zip_files:
+            print("zip_file")
+            schedule = load_schedule(os.path.join(input_folder, zip_file))
+            by_date = group_by(schedule.trips, lambda trip: trip.service.start_date)
+            for date, trips in reversed(sorted(by_date.items())):
+                if not date in dates_done:
+                    dates_done.add(date)
+                    for trip in trips:
+                        for stop in trip.stops:
+                            writer.writerow(make_row(schedule, trip, stop))
+
+                if n_days is not None and len(dates_done) >= n_days:
+                    return
+
+if __name__ == '__main__':
+    merge_gtfs('data/gtfs/raw', 'data/gtfs/merged', 90)

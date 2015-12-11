@@ -16,8 +16,24 @@ Trip = namedtuple('Trip', 'route service trip_id trip_headsign direction_id stop
 # all data
 Schedule = namedtuple('Schedule', 'routes services stops trips')
 
+### utils
+def flatten(list_of_lists):
+    return [item for list in list_of_lists for item in list]
 
-def load(zip_name):
+def group_by(list, key):
+    d = {}
+    for item in list:
+        d.setdefault(key(item), []).append(item)
+    return d
+
+def merge_dicts(d1, d2):
+    d = d1.copy()
+    d.update(d2)
+    return d
+###
+
+
+def load_schedule(zip_name):
     def calendar_get_day(r):
         days_of_week = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
         values = [r[day] for day in days_of_week]
@@ -61,4 +77,40 @@ def load(zip_name):
             reader = DictReader(TextIOWrapper(trips_file, 'utf-8-sig'))
             trips = [make_trip(r) for r in reader]
 
-        return Schedule(routes, services, stops, trips)
+    return Schedule(routes, services, stops, trips)
+
+
+def group_trips_by_date(schedule):
+    """This is tailor-made of IRW GTFS, where there's a 1-1 relation between trips and services"""
+    by_date = defaultdict(lambda: [])
+    for trip in schedule.trips:
+        by_date[trip.service.start_date].append(trip)
+    return by_date
+
+
+def merge_schedules(schedule1, schedule2):
+    """Merge to schedule objects.
+     Result won't contain the services field (will have None instead).
+     If there's a date that appears in both schedules, trips from schedule1 will be used"""
+    # Schedule = namedtuple('Schedule', 'routes services stops trips')
+    routes = merge_dicts(schedule2.routes, schedule1.routes)
+    services = None
+    stops = merge_dicts(schedule2.stops, schedule1.stops)
+    # order is important because we want schedule1 trip to override schedule2
+    by_date = merge_dicts(group_trips_by_date(schedule2), group_trips_by_date(schedule1))
+    # he he nested list comprehension
+    trips = flatten(by_date.values())
+    return Schedule(routes, services, stops, trips)
+
+
+def load_schedules(zip_names):
+    """
+    Load scheduled data from all the input files.
+    Data for each date will only be loaded from the first file in which the date appears, so order
+     is important
+    """
+    schedule = load_schedule(next(zip_names))
+    for zip_name in zip_names:
+        schedule = merge_schedules(schedule, load_schedule(zip_name))
+    return schedule
+

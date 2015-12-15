@@ -43,9 +43,7 @@ However 2014-2015 data has a "planned stop" flag. It seems that its value can be
 from the planned time at station. 
 
 ### GTFS cross-validation still needed 
-However according Eran's mail from 4/11, it's possible that the planned departure time isn't the advertised depature time. This needs to be checked against the GTFS.
-
-http://192.241.154.128/gtfs-data/
+see https://github.com/daphshez/otrain/blob/master/irw_gtfs.md
 
 ### 60-seconds stops never happen
 This is according to the analysis of 2015q2 data. 

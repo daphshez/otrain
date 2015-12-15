@@ -60,9 +60,35 @@ def match():
     print('matched:', len(matched_gtfs_lines), len(matched_gtfs_lines) / len(gtfs_data), 'of gtfs records')
 
 
+def compare_times():
+    with open(r'data/otrain_gtfs/otrain_2015_04_05_06.csv', encoding='utf8') as f:
+        unmatched = 0
+        arrival_matched = 0
+        arrival_unmatched = 0
+        for r in DictReader(f):
+            if len(r['arrival_time']) == 0:
+                unmatched += 1
+                continue
+            found_minute = r['arrival_time'][3:5]
+            expected_minute = r['Planned_Arrival'][14:]
+
+            if 'מוצא' in r['Station_typ']:
+                expected_minute = r['Planned_Depratur'][14:]
+            #if len(expected_minute) == 0:
+            #    expected_minute = r['Planned_Depratur'][14:]
+            if found_minute == expected_minute:
+                arrival_matched += 1
+            else:
+                arrival_unmatched += 1
+
+    print('unmatched', unmatched)
+    print('arrival match', arrival_matched)
+    print('arrival unmatched', arrival_unmatched)
+
 
 if __name__ == '__main__':
-    matched = match()
+    # matched = match()
+    compare_times()
 
 
 

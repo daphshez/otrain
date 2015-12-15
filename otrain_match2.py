@@ -2,6 +2,7 @@ from csv import DictReader, DictWriter
 import csv
 from zipfile import ZipFile
 from io import TextIOWrapper
+from collections import Counter
 
 
 def match():
@@ -97,6 +98,30 @@ def compare_times():
           'off match otrain records', fp(arrival_unmatched / total_matched))
 
 
+def unrealised_stops():
+    realised_counter = Counter()
+    unrealised_counter = Counter()
+    with open(r'data/otrain_gtfs/gtfs_2015_04_05_06.csv', encoding='utf8') as f:
+        for r in DictReader(f):
+            if r['matched'] == 'True':
+                realised_counter[r['stop_name']] += 1
+            else:
+                unrealised_counter[r['stop_name']] += 1
+
+    stops = set(list(realised_counter.keys()) + list(unrealised_counter.keys()))
+    with open(r'data/otrain_gtfs/gtfs_unmatched_by_stop_2015_04_05_06.csv', 'w', encoding='utf8', newline='') as f:
+        writer = DictWriter(f, fieldnames=['stop_name', 'realised', 'unrealised', 'unrealised_ratio'])
+        writer.writeheader()
+        for stop in stops:
+            writer.writerow({'stop_name': stop,
+                             'realised': realised_counter.get(stop, 0),
+                             'unrealised': unrealised_counter.get(stop, 0),
+                             'unrealised_ratio': unrealised_counter.get(stop, 0) / (realised_counter.get(stop, 0) + unrealised_counter.get(stop, 0))})
+
+
+
+
 if __name__ == '__main__':
     # matched = match()
-    compare_times()
+    # compare_times()
+    unrealised_stops()

@@ -38,7 +38,16 @@ this sometimes doesn't hold is Tel-Aviv Center.)
 * in 99.5% of cases, the advertised **departure** time is arrival time in otrain data. This
 may explain why what looks like early departure in otrain data isn't perceived this way by passengers.
 * 99.4% of the advertised stops appear in otrain data. Which also means 0.6% of the stops (2266 out of 382119
-planned stops) do not appear in the otrain data. I had a look at a few of these cases. It seems that
-the cause is a train skipping the less popular stops at the the beginning or end of the line.
-While this isn't very frequent, it will be experienced by the passenger as delay and should be taken
-into account in delay stats.
+planned stops) do not appear in the otrain data. In the following stations it happens in more than 1% of the 
+stops:
+```
+  stop_name	                ratio
+  Dimona                    2.94%
+  Bet Shemesh               1.61%
+  Herzliyya                 1.29%
+  Jerusalem Malha           1.23%
+  Jerusalem Biblical Zoo    1.17%
+  Kesariyya - Pardes Hanna  1.14%
+  Ramla                     1.05%
+```
+  (however could this be offset by unmatch otrain data?)

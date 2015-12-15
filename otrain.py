@@ -32,8 +32,16 @@ def load_2015q3():
 
     def fix_record(r):
         r['Planned'] = di[r['Planned']]
+        if 'מוצא' in r['Station_typ']:
+            r['Timestamp_For_Match'] = r['Planned_Depratur'][11:] + ":00"
+        else:
+            # gtfs uses hours >= 24 for trips that continue after midnight
+            timestamp = r['Planned_Arrival'][11:]
+            if r['Planned_Arrival'][:10].strip() != r['Train_Date']:
+                timestamp =  str(int(timestamp[:2]) + 24) + timestamp[2:]
+            r['Timestamp_For_Match'] = timestamp + ":00"
+        # reformat train date to match gtfs format
         r['Train_Date'] = r['Train_Date'][6:] + r['Train_Date'][3:5] + r['Train_Date'][:2]
-        r['Short_Planned_Arrival_Time'] = r['Planned_Arrival'][11:] + ":00"
         r['route_id'] = heb_route_names.get(r['Route_Description'], '')
         return r
 
@@ -59,7 +67,7 @@ def match_otrain_gtfs(gtfs_file_name, otrain_data):
     gtfs_line_to_train_number = {}
 
     def match(r):
-        key = r['Train_Date'], r['route_id'], r['Station_number'], r['Short_Planned_Arrival_Time']
+        key = r['Train_Date'], r['route_id'], r['Station_number'], r['Timestamp_For_Match']
         gtfs_record = gtfs_data.get(key, None)
         if gtfs_record:
             gtfs_line_to_train_number[gtfs_record[1]] = r['Train_Number']
@@ -76,7 +84,7 @@ def match_otrain_gtfs(gtfs_file_name, otrain_data):
 
     # write the matched record
     print("Matching records and writing updated otrain data")
-    with open(r'data/otrain_gtfs/2015_04_05_06.csv', 'w', encoding='utf8', newline='') as f:
+    with open(r'data/otrain_gtfs/otrain_2015_04_05_06.csv', 'w', encoding='utf8', newline='') as f:
         writer = DictWriter(f, fieldnames=otrain_fields+extra_fields)
         writer.writeheader()
         for r in otrain_data:
@@ -84,7 +92,7 @@ def match_otrain_gtfs(gtfs_file_name, otrain_data):
 
     # write a copy of the gtfs file with an extra field to whether to record was used
     print("Writing updated gtfs")
-    with open(r'data/otrain_gtfs/gtfs.csv', 'w', encoding='utf8') as f:
+    with open(r'data/otrain_gtfs/gtfs_2015_04_05_06.csv', 'w', encoding='utf8') as f:
         f.write( gtfs_lines[0].strip() + ',train_number\n' )
         for i, line in enumerate(gtfs_lines[1:]):
             line = line.strip() + "," + gtfs_line_to_train_number.get(i, "-1") + "\n"

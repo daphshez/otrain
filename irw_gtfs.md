@@ -35,7 +35,7 @@ time as they were advertised to the public.
 Joining the data for 2015q2, here's some finds:
 * In most cases, the advertised time (gtfs time) of arrival and departure is identical (the only station where
 this sometimes doesn't hold is Tel-Aviv Center.)
-* in 99.5% of cases, the advertised arrival\departure time is arrival time in otrain data. This
+* in 99.5% of cases, the advertised **departure** time is arrival time in otrain data. This
 may explain why what looks like early departure in otrain data isn't perceived this way by passengers.
 * 99.4% of the advertised stops appear in otrain data. Which also means 0.6% of the stops (2266 out of 382119
 planned stops) do not appear in the otrain data. I had a look at a few of these cases. It seems that

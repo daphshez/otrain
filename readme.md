@@ -25,7 +25,12 @@ Analysis of data of the [Open Train project](http://otrain.org/)
 * load and compare 2014 data
 * design a measure for train latency based on daily number of passengers
 ...Some kind of balance for time of day
-* chart delay along route 
+* chart delay along route
+* are all trips with the same train number basically the same?
+* do the 60/90-seconds stop really cause delays?
+* are all otrain data that aren't matched to gtfs non planned to non commercial stops?
+* Why does sometimes (very few) planned time in otrain data != gtfs time?
+
 
 
 ## Some insights 
